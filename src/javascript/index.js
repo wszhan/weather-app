@@ -17,6 +17,46 @@ const feelsLikeTemperature = document.getElementById('feels-like-temp');
 const minTemperature = document.getElementById('min-temp');
 const maxTemperature = document.getElementById('max-temp');
 const humidity = document.getElementById('humidity');
+const searchButton = document.getElementById('search-button');
+
+searchButton.onclick = e => {
+    e.preventDefault();
+    const form = e.target.parentElement;
+    const inputLocation = form.querySelector('#location-search').value;
+    console.log(inputLocation);
+    onecallWeatherLocation(inputLocation);
+}
+
+function onecallWeatherLocation(name) {
+    return locationNameToCoordinates(name)
+        .then(d => ({
+            name: d.name,
+            latitude: d.lat,
+            longitude: d.lon,
+        }))
+        .then(
+            d => {
+                // set location
+                locationName.innerText = d.name;
+                // get one call weather
+                const url = constructOnecallUrl(d.latitude, d.longitude);
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        const currWeather = data.current;
+                        shortDescription.innerText = currWeather.weather[0].main;
+                        longDescription.innerText = currWeather.weather[0].description;
+
+                        currTemperature.innerText = currWeather.temp;
+                        feelsLikeTemperature.innerText = currWeather.feels_like;
+                    });
+            }
+        )
+        .catch(err => {
+            console.log(err);
+        });
+}
+
 
 function locationNameToCoordinates(name) {
     const key=decode(KHEE);
@@ -56,8 +96,7 @@ function constructOnecallUrl(
     return res;
 }
 
-locationNameToCoordinates('shanghai')
-    .then(d => console.log(d));
+// onecallWeatherLocation('shanghai');
 
 function weatherObjFactory(
     locationName=undefined,
